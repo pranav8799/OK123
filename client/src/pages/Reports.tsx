@@ -4,12 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
-  Send, 
-  Settings, 
-  Clock, 
-  XCircle, 
   Download, 
   Plus, 
   Eye, 
@@ -17,7 +12,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { reportsStatusData, reportsTrendData } from '@/lib/mockData';
 
 interface Application {
   id: string;
@@ -47,54 +41,7 @@ const Reports: React.FC = () => {
     { id: 'APP-010', applicantName: 'Maria Garcia', shopName: 'Flower Shop', status: 'in-process', submittedDate: '2024-01-06' },
   ];
 
-  const summaryCards = [
-    {
-      title: 'Submitted to LOS',
-      value: 625,
-      icon: Send,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/20',
-      testId: 'submitted-to-los'
-    },
-    {
-      title: 'In Process',
-      value: 267,
-      icon: Settings,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
-      testId: 'in-process-reports'
-    },
-    {
-      title: 'Rejected',
-      value: 189,
-      icon: XCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100 dark:bg-red-900/20',
-      testId: 'rejected-reports'
-    },
-    {
-      title: 'Not Submitted',
-      value: 166,
-      icon: Clock,
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-100 dark:bg-gray-900/20',
-      testId: 'not-submitted'
-    },
-  ];
 
-  const pieData = reportsStatusData.labels.map((label, index) => ({
-    name: label,
-    value: reportsStatusData.datasets[0].data[index],
-    color: Array.isArray(reportsStatusData.datasets[0].backgroundColor) 
-      ? reportsStatusData.datasets[0].backgroundColor[index] 
-      : reportsStatusData.datasets[0].backgroundColor
-  }));
-
-  const lineData = reportsTrendData.labels.map((label, index) => ({
-    name: label,
-    submitted: reportsTrendData.datasets[0].data[index],
-    approved: reportsTrendData.datasets[1].data[index]
-  }));
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -137,28 +84,6 @@ const Reports: React.FC = () => {
     console.log('Editing application:', id);
   };
 
-  const RADIAN = Math.PI / 180;
-  const renderCustomizedLabel = ({
-    cx, cy, midAngle, innerRadius, outerRadius, percent
-  }: any) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize={12}
-        fontWeight="bold"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
 
   return (
     <div className="p-6">
@@ -211,129 +136,6 @@ const Reports: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {summaryCards.map((card) => (
-          <Card
-            key={card.title}
-            className="hover:shadow-lg transition-shadow duration-200"
-            data-testid={card.testId}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {card.title}
-                  </p>
-                  <p className="text-3xl font-bold text-foreground mt-1">
-                    {card.value.toLocaleString()}
-                  </p>
-                </div>
-                <div className={`${card.bgColor} p-3 rounded-lg`}>
-                  <card.icon className={`${card.color} text-xl h-6 w-6`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card data-testid="reports-status-distribution">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">
-              Application Status Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={renderCustomizedLabel}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [value.toLocaleString(), 'Applications']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex flex-wrap justify-center gap-4 mt-4">
-              {pieData.map((entry, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: entry.color }}
-                  />
-                  <span className="text-sm text-muted-foreground">{entry.name}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="reports-trend-chart">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">
-              Monthly Application Trends
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={lineData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                  />
-                  <Tooltip 
-                    labelStyle={{ color: 'var(--foreground)' }}
-                    contentStyle={{ 
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="submitted" 
-                    stroke="hsl(210, 100%, 60%)" 
-                    strokeWidth={2}
-                    name="Submitted"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="approved" 
-                    stroke="hsl(163, 91%, 27%)" 
-                    strokeWidth={2}
-                    name="Approved"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Applications Table */}
       <Card>
