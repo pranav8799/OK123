@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import KYCApplication from "@/pages/KYCApplication";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/not-found";
+import ApplicationsPage from "@/pages/ApplicationsPage";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/kyc" component={KYCApplication} />
         <Route path="/reports" component={Reports} />
+        <Route path="/applications/:status" component={ApplicationsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
