@@ -3,21 +3,29 @@ import { useRoute } from "wouter";
 // mock data for demo
 const mockData = {
   "total-applications": [
-    { id: 1, name: "John Doe", status: "Approved" },
-    { id: 2, name: "Jane Smith", status: "Pending" }
+    { id: 1, applicationId: "APP-001", name: "John Doe", status: "Approved" },
+    { id: 2, applicationId: "APP-002", name: "Jane Smith", status: "Pending" }
   ],
-  approved: [{ id: 1, name: "John Doe", status: "Approved" }],
-  rejected: [{ id: 3, name: "Alan Brown", status: "Rejected" }],
-  "in-process": [{ id: 4, name: "Emily Davis", status: "In Process" }],
-  pending: [{ id: 2, name: "Jane Smith", status: "Pending" }]
+  approved: [
+    { id: 1, applicationId: "APP-001", name: "John Doe", status: "Approved" }
+  ],
+  rejected: [
+    { id: 3, applicationId: "APP-003", name: "Alan Brown", status: "Rejected" }
+  ],
+  "in-process": [
+    { id: 4, applicationId: "APP-004", name: "Emily Davis", status: "In Process" }
+  ],
+  pending: [
+    { id: 2, applicationId: "APP-002", name: "Jane Smith", status: "Pending" }
+  ]
 };
 
 // helper to clean up the title
 const formatTitle = (status: string) => {
   return status
-    .split("-")               // split at hyphens → ["in", "process"]
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
-    .join(" ");               // join back → "In Process"
+    .split("-")               
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");               
 };
 
 const ApplicationsPage: React.FC = () => {
@@ -36,17 +44,19 @@ const ApplicationsPage: React.FC = () => {
       {data.length > 0 ? (
         <table className="w-full border-collapse border border-gray-300">
           <thead>
-  <tr className="bg-gray-100 dark:bg-gray-800">
-    <th className="border p-2 text-left text-gray-700 dark:text-gray-200">ID</th>
-    <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Name</th>
-    <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Status</th>
-  </tr>
-</thead>
+            <tr className="bg-gray-100 dark:bg-gray-800">
+              <th className="border p-2 text-left text-gray-700 dark:text-gray-200">#</th>
+              <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Application ID</th>
+              <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Name</th>
+              <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Status</th>
+            </tr>
+          </thead>
 
           <tbody>
             {data.map((item) => (
               <tr key={item.id}>
                 <td className="border p-2">{item.id}</td>
+                <td className="border p-2">{item.applicationId}</td>
                 <td className="border p-2">{item.name}</td>
                 <td className="border p-2">{item.status}</td>
               </tr>
@@ -54,7 +64,9 @@ const ApplicationsPage: React.FC = () => {
           </tbody>
         </table>
       ) : (
-        <p className="text-muted-foreground">No records found for {formatTitle(status)}.</p>
+        <p className="text-muted-foreground">
+          No records found for {formatTitle(status)}.
+        </p>
       )}
     </div>
   );

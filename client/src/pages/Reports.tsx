@@ -138,70 +138,76 @@ const Reports: React.FC = () => {
 
 
       {/* Applications Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold">Recent Applications</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleExport} data-testid="export-button">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-              <Button onClick={handleNewApplication} data-testid="new-application-button">
-                <Plus className="mr-2 h-4 w-4" />
-                New Application
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Application ID</TableHead>
-                  <TableHead>Applicant Name</TableHead>
-                  <TableHead>Shop Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Submitted Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentApplications.map((application) => (
-                  <TableRow key={application.id} data-testid={`application-row-${application.id}`}>
-                    <TableCell className="font-medium">{application.id}</TableCell>
-                    <TableCell>{application.applicantName}</TableCell>
-                    <TableCell>{application.shopName}</TableCell>
-                    <TableCell>{getStatusBadge(application.status)}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(application.submittedDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewApplication(application.id)}
-                          data-testid={`view-application-${application.id}`}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditApplication(application.id)}
-                          data-testid={`edit-application-${application.id}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+     {/* Applications Table */}
+<Card>
+  <CardHeader>
+    <div className="flex items-center justify-between">
+      <CardTitle className="text-xl font-semibold">Recent Applications</CardTitle>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={handleExport} data-testid="export-button">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <Button onClick={handleNewApplication} data-testid="new-application-button">
+          <Plus className="mr-2 h-4 w-4" />
+          New Application
+        </Button>
+      </div>
+    </div>
+  </CardHeader>
+  <CardContent>
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100 dark:bg-gray-800">
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Application ID</th>
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Applicant Name</th>
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Shop Name</th>
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Status</th>
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Submitted Date</th>
+            <th className="border p-2 text-left text-gray-700 dark:text-gray-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentApplications.map((application, idx) => (
+            <tr
+              key={application.id}
+              className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              data-testid={`application-row-${application.id}`}
+            >
+              <td className="border p-2 font-medium">{application.id}</td>
+              <td className="border p-2">{application.applicantName}</td>
+              <td className="border p-2">{application.shopName}</td>
+              <td className="border p-2">{getStatusBadge(application.status)}</td>
+              <td className="border p-2 text-muted-foreground">
+                {new Date(application.submittedDate).toLocaleDateString()}
+              </td>
+              <td className="border p-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewApplication(application.id)}
+                    data-testid={`view-application-${application.id}`}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditApplication(application.id)}
+                    data-testid={`edit-application-${application.id}`}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-6">
