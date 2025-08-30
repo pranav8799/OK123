@@ -1,0 +1,1043 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC CRM Application - Enterprise Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                }
+            },
+            fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+            }
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(221.2 83.2% 53.3%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222.2 84% 4.9%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(210 40% 96%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(221.2 83.2% 53.3%);
+            --radius: 0.5rem;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        .step-indicator.active {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .step-indicator.completed {
+            background-color: hsl(142.1 76.2% 36.3%);
+            color: white;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-background font-sans">
+    <!-- @COMPONENT: Layout [Main application layout] -->
+    <div class="min-h-screen bg-background">
+        <!-- @COMPONENT: Sidebar [Navigation sidebar] -->
+        <div class="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border">
+            <div class="flex flex-col h-full">
+                <!-- Logo Header -->
+                <div class="flex items-center justify-center h-16 px-4 border-b border-border">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-primary-foreground"></i>
+                        </div>
+                        <span class="text-xl font-semibold text-foreground">KYC CRM</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation Menu -->
+                <nav class="flex-1 px-4 py-6 space-y-2">
+                    <a href="#dashboard" class="nav-item active flex items-center px-3 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground" data-page="dashboard">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="#kyc" class="nav-item flex items-center px-3 py-2 text-sm font-medium text-muted-foreground rounded-md hover:bg-accent hover:text-accent-foreground" data-page="kyc">
+                        <i data-lucide="user-check" class="w-5 h-5 mr-3"></i>
+                        KYC Application
+                    </a>
+                    <a href="#reports" class="nav-item flex items-center px-3 py-2 text-sm font-medium text-muted-foreground rounded-md hover:bg-accent hover:text-accent-foreground" data-page="reports">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 mr-3"></i>
+                        Reports
+                    </a>
+                </nav>
+                
+                <!-- User Profile -->
+                <div class="p-4 border-t border-border">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                            <i data-lucide="user" class="w-4 h-4 text-secondary-foreground"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-foreground truncate">Admin User</p>
+                            <p class="text-xs text-muted-foreground truncate">admin@company.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [Main content area] -->
+        <div class="pl-64">
+            <!-- @COMPONENT: Header [Top header bar] -->
+            <header class="bg-card border-b border-border h-16 flex items-center justify-between px-6">
+                <div>
+                    <h1 id="page-title" class="text-xl font-semibold text-foreground">Dashboard</h1>
+                    <p id="page-subtitle" class="text-sm text-muted-foreground">Overview of KYC applications and metrics</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="relative p-2 text-muted-foreground hover:text-foreground">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
+                    </button>
+                    <button class="flex items-center space-x-2 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-accent hover:text-accent-foreground">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>New Application</span>
+                    </button>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <!-- @COMPONENT: DashboardPage [Dashboard content] -->
+            <div id="dashboard-page" class="page-content p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                    <!-- @COMPONENT: StatsCard [Total Applications] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Total Applications</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.total">2,847</p>
+                            </div>
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-primary"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2">
+                            <span class="text-green-600">+12%</span> from last month
+                        </p>
+                    </div>
+                    <!-- @END_COMPONENT: StatsCard -->
+                    
+                    <!-- @COMPONENT: StatsCard [Approved] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Approved</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.approved">1,923</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2">
+                            <span class="text-green-600">+8%</span> approval rate
+                        </p>
+                    </div>
+                    <!-- @END_COMPONENT: StatsCard -->
+                    
+                    <!-- @COMPONENT: StatsCard [Rejected] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Rejected</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.rejected">324</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="x-circle" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2">
+                            <span class="text-red-600">-3%</span> from last month
+                        </p>
+                    </div>
+                    <!-- @END_COMPONENT: StatsCard -->
+                    
+                    <!-- @COMPONENT: StatsCard [In Process] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">In Process</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.inProcess">456</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="clock" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2">
+                            Average 3.2 days processing
+                        </p>
+                    </div>
+                    <!-- @END_COMPONENT: StatsCard -->
+                    
+                    <!-- @COMPONENT: StatsCard [Pending] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Pending</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.pending">144</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="pause-circle" class="w-6 h-6 text-yellow-600"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2">
+                            Awaiting documentation
+                        </p>
+                    </div>
+                    <!-- @END_COMPONENT: StatsCard -->
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- @COMPONENT: StatusDistributionChart [Pie chart for application status] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Application Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="statusPieChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: StatusDistributionChart -->
+                    
+                    <!-- @COMPONENT: MonthlyTrendsChart [Bar chart for monthly trends] -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Monthly Application Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyTrendsChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: MonthlyTrendsChart -->
+                </div>
+
+                <!-- Recent Applications Table -->
+                <!-- @COMPONENT: RecentApplicationsTable [Recent applications list] -->
+                <div class="bg-card rounded-lg border border-border">
+                    <div class="p-6 border-b border-border">
+                        <h3 class="text-lg font-semibold text-foreground">Recent Applications</h3>
+                        <p class="text-sm text-muted-foreground">Latest KYC applications submitted</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-muted">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Applicant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Application ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-card divide-y divide-border">
+                                <!-- @MAP: recentApplications.map(application => ( -->
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-sm font-medium text-secondary-foreground">JD</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-foreground">John Doe</div>
+                                                <div class="text-sm text-muted-foreground">john.doe@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 15, 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-primary/80">View</button>
+                                    </td>
+                                </tr>
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-sm font-medium text-secondary-foreground">JS</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-foreground">Jane Smith</div>
+                                                <div class="text-sm text-muted-foreground">jane.smith@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-002</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">In Process</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 14, 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-primary/80">View</button>
+                                    </td>
+                                </tr>
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-sm font-medium text-secondary-foreground">MB</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-foreground">Mike Brown</div>
+                                                <div class="text-sm text-muted-foreground">mike.brown@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-003</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 13, 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-primary/80">View</button>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: RecentApplicationsTable -->
+            </div>
+            <!-- @END_COMPONENT: DashboardPage -->
+
+            <!-- @COMPONENT: KYCPage [KYC Application Form] -->
+            <div id="kyc-page" class="page-content p-6 hidden">
+                <!-- @COMPONENT: StepIndicator [Progress indicator] -->
+                <div class="bg-card p-6 rounded-lg border border-border mb-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">1</div>
+                            <div class="w-12 h-0.5 bg-border"></div>
+                            <div class="step-indicator w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">2</div>
+                            <div class="w-12 h-0.5 bg-border"></div>
+                            <div class="step-indicator w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">3</div>
+                            <div class="w-12 h-0.5 bg-border"></div>
+                            <div class="step-indicator w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">4</div>
+                            <div class="w-12 h-0.5 bg-border"></div>
+                            <div class="step-indicator w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">5</div>
+                        </div>
+                        <div class="text-sm text-muted-foreground">
+                            Step <span id="current-step">1</span> of 5
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold text-foreground" id="step-title">Personal Details</h3>
+                        <p class="text-sm text-muted-foreground" id="step-description">Please provide your personal information and contact details</p>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: StepIndicator -->
+
+                <!-- @COMPONENT: Step1PersonalDetails [Step 1 form] -->
+                <div id="step-1" class="step-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Personal Information -->
+                        <div class="bg-card p-6 rounded-lg border border-border">
+                            <h4 class="text-md font-semibold text-foreground mb-4">Personal Information</h4>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">First Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter first name" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Middle Name</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter middle name" data-mock="true">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Last Name *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter last name" data-mock="true">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Mobile Number *</label>
+                                        <div class="flex">
+                                            <input type="tel" class="flex-1 px-3 py-2 border border-input rounded-l-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="10-digit mobile" maxlength="10" data-mock="true">
+                                            <button class="px-4 py-2 bg-primary text-primary-foreground rounded-r-md text-sm font-medium">OTP</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Email *</label>
+                                        <div class="flex">
+                                            <input type="email" class="flex-1 px-3 py-2 border border-input rounded-l-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter email" data-mock="true">
+                                            <button class="px-4 py-2 bg-primary text-primary-foreground rounded-r-md text-sm font-medium">OTP</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Aadhaar Number *</label>
+                                    <div class="flex">
+                                        <input type="text" class="flex-1 px-3 py-2 border border-input rounded-l-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="12-digit Aadhaar" maxlength="12" data-mock="true">
+                                        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-r-md text-sm font-medium">OTP</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Average Monthly Income *</label>
+                                    <input type="number" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter amount in ₹" data-mock="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="bg-card p-6 rounded-lg border border-border">
+                            <h4 class="text-md font-semibold text-foreground mb-4">Address Information</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Street Address *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter street address" data-mock="true">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">City *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter city" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Pin Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="6-digit pin" maxlength="6" data-mock="true">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">State *</label>
+                                        <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-mock="true">
+                                            <option>Select State</option>
+                                            <option>Maharashtra</option>
+                                            <option>Karnataka</option>
+                                            <option>Delhi</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Block Number</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter block number" data-mock="true">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selfie Capture -->
+                        <div class="bg-card p-6 rounded-lg border border-border">
+                            <h4 class="text-md font-semibold text-foreground mb-4">Live Selfie Capture</h4>
+                            <div class="text-center">
+                                <div class="w-48 h-48 mx-auto bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center mb-4">
+                                    <div class="text-center">
+                                        <i data-lucide="camera" class="w-12 h-12 text-muted-foreground mx-auto mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to capture selfie</p>
+                                    </div>
+                                </div>
+                                <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">
+                                    <!-- @FUNCTIONALITY: This button should implement live camera access for selfie capture -->
+                                    Capture Selfie
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details -->
+                        <div class="bg-card p-6 rounded-lg border border-border">
+                            <h4 class="text-md font-semibold text-foreground mb-4">Bank Details</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Account Number *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter account number" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Account Holder Name *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter account holder name" data-mock="true">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">IFSC Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter IFSC code" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Bank Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter bank name" data-mock="true">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Step1PersonalDetails -->
+
+                <!-- @COMPONENT: Step2Documents [Step 2 document upload] -->
+                <div id="step-2" class="step-content hidden">
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <h4 class="text-md font-semibold text-foreground mb-4">Personal Documents Upload</h4>
+                        <p class="text-sm text-muted-foreground mb-6">Upload required documents. Once uploaded, the dropdown option will be disabled.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- @MAP: personalDocuments.map(doc => ( -->
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">Aadhaar Card</h5>
+                                    <span class="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">Required</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">PAN Card</h5>
+                                    <span class="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">Required</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">Cancelled Cheque</h5>
+                                    <span class="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">Required</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">ITR Documents</h5>
+                                    <span class="text-xs bg-secondary/50 text-secondary-foreground px-2 py-1 rounded">Optional</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">House Documents</h5>
+                                    <span class="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded">Required</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-border rounded-lg p-4" data-mock="true">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-medium text-foreground">Reference Documents</h5>
+                                    <span class="text-xs bg-secondary/50 text-secondary-foreground px-2 py-1 rounded">Optional</span>
+                                </div>
+                                <div class="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                                    <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mx-auto mb-2"></i>
+                                    <p class="text-sm text-muted-foreground mb-2">Click to upload or drag and drop</p>
+                                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <button class="text-xs text-primary">Browse Files</button>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Step2Documents -->
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button id="prev-btn" class="px-6 py-2 border border-border text-foreground rounded-md hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i data-lucide="chevron-left" class="w-4 h-4 inline mr-2"></i>
+                        Previous
+                    </button>
+                    <button id="next-btn" class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                        Next
+                        <i data-lucide="chevron-right" class="w-4 h-4 inline ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: KYCPage -->
+
+            <!-- @COMPONENT: ReportsPage [Reports and analytics] -->
+            <div id="reports-page" class="page-content p-6 hidden">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Submitted to LOS</p>
+                                <p class="text-2xl font-bold text-foreground">1,567</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="send" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">In Process</p>
+                                <p class="text-2xl font-bold text-foreground">456</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="clock" class="w-6 h-6 text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Rejected</p>
+                                <p class="text-2xl font-bold text-foreground">324</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="x-circle" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Not Submitted</p>
+                                <p class="text-2xl font-bold text-foreground">500</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="pause" class="w-6 h-6 text-gray-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Table and Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Applications Table -->
+                    <div class="lg:col-span-2 bg-card rounded-lg border border-border">
+                        <div class="p-6 border-b border-border">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-foreground">Applications by Status</h3>
+                                <div class="flex items-center space-x-2">
+                                    <select class="px-3 py-1 text-sm border border-input rounded-md">
+                                        <option>All Statuses</option>
+                                        <option>Submitted to LOS</option>
+                                        <option>In Process</option>
+                                        <option>Rejected</option>
+                                        <option>Not Submitted</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Applicant</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card divide-y divide-border">
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Alex Johnson</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-004</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Submitted to LOS</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 16, 2024</td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Sarah Wilson</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-005</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">In Process</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 15, 2024</td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">David Lee</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-006</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 14, 2024</td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Emma Davis</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">KYC-2024-007</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Not Submitted</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">Jan 13, 2024</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution Chart -->
+                    <div class="bg-card p-6 rounded-lg border border-border">
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="reportsStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ReportsPage -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: Layout -->
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Page navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page-content');
+        const pageTitle = document.getElementById('page-title');
+        const pageSubtitle = document.getElementById('page-subtitle');
+
+        // Page metadata
+        const pageData = {
+            dashboard: {
+                title: 'Dashboard',
+                subtitle: 'Overview of KYC applications and metrics'
+            },
+            kyc: {
+                title: 'KYC Application',
+                subtitle: 'Step-by-step KYC application process'
+            },
+            reports: {
+                title: 'Reports',
+                subtitle: 'Application status tracking and analytics'
+            }
+        };
+
+        // Navigation handler
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = item.dataset.page;
+                
+                // Update active nav item
+                navItems.forEach(nav => nav.classList.remove('active', 'bg-primary', 'text-primary-foreground'));
+                navItems.forEach(nav => nav.classList.add('text-muted-foreground', 'hover:bg-accent', 'hover:text-accent-foreground'));
+                item.classList.add('active', 'bg-primary', 'text-primary-foreground');
+                item.classList.remove('text-muted-foreground', 'hover:bg-accent', 'hover:text-accent-foreground');
+                
+                // Show corresponding page
+                pages.forEach(p => p.classList.add('hidden'));
+                document.getElementById(`${page}-page`).classList.remove('hidden');
+                
+                // Update page title and subtitle
+                pageTitle.textContent = pageData[page].title;
+                pageSubtitle.textContent = pageData[page].subtitle;
+            });
+        });
+
+        // Initialize Charts
+        (function() {
+            // Status Pie Chart
+            const statusCtx = document.getElementById('statusPieChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Approved', 'Rejected', 'In Process', 'Pending'],
+                        datasets: [{
+                            data: [1923, 324, 456, 144],
+                            backgroundColor: [
+                                'hsl(142.1 76.2% 36.3%)',
+                                'hsl(0 84.2% 60.2%)',
+                                'hsl(221.2 83.2% 53.3%)',
+                                'hsl(47.9 95.8% 53.1%)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Monthly Trends Bar Chart
+            const trendsCtx = document.getElementById('monthlyTrendsChart');
+            if (trendsCtx) {
+                new Chart(trendsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Oct', 'Nov', 'Dec', 'Jan'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [450, 620, 580, 720],
+                            backgroundColor: 'hsl(221.2 83.2% 53.3%)',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'hsl(214.3 31.8% 91.4%)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Reports Status Chart
+            const reportsCtx = document.getElementById('reportsStatusChart');
+            if (reportsCtx) {
+                new Chart(reportsCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Submitted to LOS', 'In Process', 'Rejected', 'Not Submitted'],
+                        datasets: [{
+                            data: [1567, 456, 324, 500],
+                            backgroundColor: [
+                                'hsl(214.9 75.6% 56.8%)',
+                                'hsl(47.9 95.8% 53.1%)',
+                                'hsl(0 84.2% 60.2%)',
+                                'hsl(220 8.9% 46.1%)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+
+        // KYC Form Step Navigation
+        // @STATE: currentStep:number = 1
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        const stepContents = document.querySelectorAll('.step-content');
+        const stepIndicators = document.querySelectorAll('.step-indicator');
+        const currentStepElement = document.getElementById('current-step');
+        const stepTitle = document.getElementById('step-title');
+        const stepDescription = document.getElementById('step-description');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        const stepData = {
+            1: {
+                title: 'Personal Details',
+                description: 'Please provide your personal information and contact details'
+            },
+            2: {
+                title: 'Personal Documents',
+                description: 'Upload required personal documents'
+            },
+            3: {
+                title: 'Shop Information',
+                description: 'Provide details about your business/shop'
+            },
+            4: {
+                title: 'Business Documents',
+                description: 'Upload business-related documents based on your business type'
+            },
+            5: {
+                title: 'Final Review',
+                description: 'Review and submit your application'
+            }
+        };
+
+        function updateStepUI() {
+            // Update step indicators
+            stepIndicators.forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                indicator.classList.remove('active', 'completed');
+                
+                if (stepNumber < currentStep) {
+                    indicator.classList.add('completed');
+                } else if (stepNumber === currentStep) {
+                    indicator.classList.add('active');
+                }
+            });
+
+            // Update step content
+            stepContents.forEach((content, index) => {
+                if (index + 1 === currentStep) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+
+            // Update step info
+            currentStepElement.textContent = currentStep;
+            stepTitle.textContent = stepData[currentStep].title;
+            stepDescription.textContent = stepData[currentStep].description;
+
+            // Update navigation buttons
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.textContent = currentStep === totalSteps ? 'Submit Application' : 'Next';
+        }
+
+        // Navigation button handlers
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                // TODO: Add form validation before proceeding
+                currentStep++;
+                updateStepUI();
+            } else {
+                // TODO: Submit application logic
+                alert('Application submitted successfully!');
+            }
+        });
+
+        // Form validation placeholders
+        // TODO: Implement mobile number validation (10 digits)
+        // TODO: Implement Aadhaar validation (12 digits)
+        // TODO: Implement email validation
+        // TODO: Implement required field validation
+        // TODO: Implement OTP verification functionality
+        // TODO: Implement file upload validation
+        // TODO: Implement camera access for selfie capture
+
+        // Initialize UI
+        updateStepUI();
+    </script>
+</body>
+</html>

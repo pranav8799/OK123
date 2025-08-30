@@ -1,0 +1,1395 @@
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC CRM Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "var(--font-sans)"],
+                }
+            },
+        }
+    };
+    </script>
+    
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(163 91% 27%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(163 70% 50%);
+            --secondary-foreground: hsl(222.2 84% 4.9%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(163 70% 50%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(163 91% 27%);
+            --radius: 0.75rem;
+        }
+        
+        .dark {
+            --background: hsl(222.2 84% 4.9%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(222.2 84% 4.9%);
+            --card-foreground: hsl(210 40% 98%);
+            --popover: hsl(222.2 84% 4.9%);
+            --popover-foreground: hsl(210 40% 98%);
+            --primary: hsl(163 70% 50%);
+            --primary-foreground: hsl(222.2 84% 4.9%);
+            --secondary: hsl(217.2 32.6% 17.5%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(217.2 32.6% 17.5%);
+            --muted-foreground: hsl(215 20.2% 65.1%);
+            --accent: hsl(217.2 32.6% 17.5%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 62.8% 30.6%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217.2 32.6% 17.5%);
+            --input: hsl(217.2 32.6% 17.5%);
+            --ring: hsl(163 70% 50%);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .step-indicator {
+            position: relative;
+        }
+        
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100px;
+            height: 2px;
+            background: var(--muted);
+            transform: translateY(-50%);
+        }
+        
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        
+        .step-indicator.completed::after {
+            background: var(--primary);
+        }
+        
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: var(--muted);
+        }
+    </style>
+</head>
+
+<body class="h-full bg-background text-foreground font-sans">
+    <!-- Navigation Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-card border-r border-border shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out z-30" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-border">
+            <h1 class="text-xl font-bold text-primary">KYC CRM</h1>
+            <button class="lg:hidden" onclick="toggleSidebar()">
+                <i class="fas fa-times text-muted-foreground"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6">
+            <div class="px-6 mb-6">
+                <button 
+                    onclick="toggleTheme()"
+                    class="flex items-center w-full px-3 py-2 text-sm rounded-lg bg-muted hover:bg-accent transition-colors"
+                >
+                    <i class="fas fa-moon mr-3" id="theme-icon"></i>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+            </div>
+            
+            <div class="space-y-1 px-4">
+                <a href="#" onclick="showSection('dashboard')" class="nav-link active flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                    <i class="fas fa-chart-pie mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" onclick="showSection('kyc')" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                    <i class="fas fa-user-check mr-3"></i>
+                    KYC Application
+                </a>
+                <a href="#" onclick="showSection('reports')" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    Reports
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Mobile menu button -->
+    <div class="lg:hidden fixed top-4 left-4 z-40">
+        <button onclick="toggleSidebar()" class="bg-card p-2 rounded-lg shadow-md border border-border">
+            <i class="fas fa-bars text-foreground"></i>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section active">
+            <div class="p-6">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-foreground mb-2">Dashboard</h1>
+                    <p class="text-muted-foreground">Overview of KYC applications and statistics</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                    <!-- @COMPONENT: DashboardCard [Total Applications] -->
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Total Applications</p>
+                                <p class="text-3xl font-bold text-foreground" data-mock="true">1,247</p>
+                            </div>
+                            <div class="bg-primary/10 p-3 rounded-lg">
+                                <i class="fas fa-file-alt text-primary text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-green-600 text-sm font-medium">+12.5%</span>
+                            <span class="text-muted-foreground text-sm"> from last month</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: DashboardCard -->
+
+                    <!-- @COMPONENT: DashboardCard [Approved] -->
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Approved</p>
+                                <p class="text-3xl font-bold text-green-600" data-mock="true">892</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-green-600 text-sm font-medium">71.5%</span>
+                            <span class="text-muted-foreground text-sm"> approval rate</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: DashboardCard -->
+
+                    <!-- @COMPONENT: DashboardCard [Rejected] -->
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Rejected</p>
+                                <p class="text-3xl font-bold text-red-600" data-mock="true">156</p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-red-600 text-sm font-medium">12.5%</span>
+                            <span class="text-muted-foreground text-sm"> rejection rate</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: DashboardCard -->
+
+                    <!-- @COMPONENT: DashboardCard [In Process] -->
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">In Process</p>
+                                <p class="text-3xl font-bold text-yellow-600" data-mock="true">143</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-yellow-600 text-sm font-medium">11.5%</span>
+                            <span class="text-muted-foreground text-sm"> processing</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: DashboardCard -->
+
+                    <!-- @COMPONENT: DashboardCard [Pending Submissions] -->
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Pending</p>
+                                <p class="text-3xl font-bold text-blue-600" data-mock="true">56</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-blue-600 text-sm font-medium">4.5%</span>
+                            <span class="text-muted-foreground text-sm"> pending</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: DashboardCard -->
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- @COMPONENT: PieChart [Application Status Distribution] -->
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-foreground">Application Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="statusPieChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PieChart -->
+
+                    <!-- @COMPONENT: BarChart [Monthly Trends] -->
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-foreground">Monthly Application Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyBarChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: BarChart -->
+                </div>
+            </div>
+        </div>
+
+        <!-- KYC Application Section -->
+        <div id="kyc-section" class="section">
+            <div class="p-6">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-foreground mb-2">KYC Application</h1>
+                    <p class="text-muted-foreground">Complete your KYC verification process</p>
+                </div>
+
+                <!-- Step Indicator -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-center space-x-4 overflow-x-auto pb-4">
+                        <div class="step-indicator completed flex flex-col items-center">
+                            <div class="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                                1
+                            </div>
+                            <span class="text-xs mt-2 text-center">Personal Details</span>
+                        </div>
+                        <div class="step-indicator flex flex-col items-center">
+                            <div class="w-10 h-10 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                                2
+                            </div>
+                            <span class="text-xs mt-2 text-center">Documents</span>
+                        </div>
+                        <div class="step-indicator flex flex-col items-center">
+                            <div class="w-10 h-10 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                                3
+                            </div>
+                            <span class="text-xs mt-2 text-center">Shop Info</span>
+                        </div>
+                        <div class="step-indicator flex flex-col items-center">
+                            <div class="w-10 h-10 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                                4
+                            </div>
+                            <span class="text-xs mt-2 text-center">Business Docs</span>
+                        </div>
+                        <div class="step-indicator flex flex-col items-center">
+                            <div class="w-10 h-10 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                                5
+                            </div>
+                            <span class="text-xs mt-2 text-center">Final Review</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Personal Details -->
+                <div id="step-1" class="kyc-step active">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h2 class="text-2xl font-semibold mb-6 text-foreground">Step 1: Personal Details</h2>
+                        
+                        <form class="space-y-6">
+                            <!-- Personal Information -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">First Name *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter first name" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Middle Name</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter middle name" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Last Name *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter last name" data-mock="true">
+                                </div>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Mobile Number *</label>
+                                    <div class="flex">
+                                        <input type="tel" class="w-full px-3 py-2 border border-input rounded-l-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="10-digit mobile number" maxlength="10" data-mock="true">
+                                        <button type="button" class="px-4 py-2 bg-primary text-primary-foreground rounded-r-lg hover:bg-primary/90 transition-colors" data-event="click:sendOTP">Send OTP</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Email Address *</label>
+                                    <div class="flex">
+                                        <input type="email" class="w-full px-3 py-2 border border-input rounded-l-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter email address" data-mock="true">
+                                        <button type="button" class="px-4 py-2 bg-primary text-primary-foreground rounded-r-lg hover:bg-primary/90 transition-colors" data-event="click:sendEmailOTP">Send OTP</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Aadhaar Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Aadhaar Number *</label>
+                                <div class="flex">
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-l-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="12-digit Aadhaar number" maxlength="12" data-mock="true">
+                                    <button type="button" class="px-4 py-2 bg-primary text-primary-foreground rounded-r-lg hover:bg-primary/90 transition-colors" data-event="click:verifyAadhaar">Verify</button>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-foreground">Address Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Street Address *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter street address" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Block Number</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter block number" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">City *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter city" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Pin Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="6-digit pin code" maxlength="6" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">State *</label>
+                                        <select class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" data-mock="true">
+                                            <option value="">Select State</option>
+                                            <option value="maharashtra">Maharashtra</option>
+                                            <option value="karnataka">Karnataka</option>
+                                            <option value="tamil-nadu">Tamil Nadu</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Selfie Capture -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-foreground">Live Selfie Capture</h3>
+                                <div class="bg-muted border-2 border-dashed border-border rounded-lg p-8 text-center">
+                                    <!-- @FUNCTIONALITY: This selfie capture should implement camera API for live photo capture -->
+                                    <i class="fas fa-camera text-4xl text-muted-foreground mb-4"></i>
+                                    <p class="text-muted-foreground mb-4">Click to capture live selfie</p>
+                                    <button type="button" class="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:captureSelfie">
+                                        <i class="fas fa-camera mr-2"></i>
+                                        Capture Selfie
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bank Details -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-foreground">Bank Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Account Number *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter account number" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Account Holder Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter account holder name" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">IFSC Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter IFSC code" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Bank Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter bank name" data-mock="true">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Monthly Income -->
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Average Monthly Income *</label>
+                                <input type="number" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter average monthly income" data-mock="true">
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between pt-6">
+                                <button type="button" class="px-6 py-2 bg-muted text-muted-foreground rounded-lg cursor-not-allowed" disabled>
+                                    Previous
+                                </button>
+                                <button type="button" onclick="nextStep()" class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:validateAndNext">
+                                    Next Step
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 2: Document Upload -->
+                <div id="step-2" class="kyc-step">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h2 class="text-2xl font-semibold mb-6 text-foreground">Step 2: Personal Documents Upload</h2>
+                        
+                        <div class="space-y-6">
+                            <!-- @MAP: documentTypes.map(doc => ( -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">Aadhaar Card *</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload Aadhaar</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">PAN Card *</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload PAN</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">Cancelled Cheque *</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload Cheque</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">ITR Documents</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload ITR</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">House Documents</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload House Docs</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-foreground">Reference Documents</label>
+                                    <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer" data-mock="true">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                                        <p class="text-sm text-muted-foreground">Click to upload Reference</p>
+                                        <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+
+                            <!-- Upload Progress -->
+                            <div class="bg-muted rounded-lg p-4">
+                                <h4 class="font-medium text-foreground mb-2">Upload Progress</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-foreground">Required Documents (2/6)</span>
+                                        <span class="text-muted-foreground">33%</span>
+                                    </div>
+                                    <div class="w-full bg-background rounded-full h-2">
+                                        <div class="bg-primary h-2 rounded-full w-1/3"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between pt-6">
+                                <button type="button" onclick="previousStep()" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                                    Previous
+                                </button>
+                                <button type="button" onclick="nextStep()" class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:validateUploads">
+                                    Next Step
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Shop Information -->
+                <div id="step-3" class="kyc-step">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h2 class="text-2xl font-semibold mb-6 text-foreground">Step 3: Shop Information</h2>
+                        
+                        <form class="space-y-6">
+                            <!-- Shop Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Shop Name *</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter shop name" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Number of Employees *</label>
+                                    <input type="number" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter number of employees" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Shop Size (sq.ft) *</label>
+                                    <input type="number" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter shop size" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Business Type *</label>
+                                    <select class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" data-mock="true" onchange="updateBusinessDocuments(this.value)">
+                                        <option value="">Select Business Type</option>
+                                        <option value="proprietorship">Proprietorship</option>
+                                        <option value="partnership">Partnership</option>
+                                        <option value="private-limited">Private Limited</option>
+                                        <option value="huf">HUF</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Shop Address -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-foreground">Shop Address</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Street Address *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter street address" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">City *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter city" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Pin Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="6-digit pin code" maxlength="6" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">State *</label>
+                                        <select class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" data-mock="true">
+                                            <option value="">Select State</option>
+                                            <option value="maharashtra">Maharashtra</option>
+                                            <option value="karnataka">Karnataka</option>
+                                            <option value="tamil-nadu">Tamil Nadu</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bank Details -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-foreground">Business Bank Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Account Number *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter account number" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Account Holder Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter account holder name" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">IFSC Code *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter IFSC code" data-mock="true">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Bank Name *</label>
+                                        <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter bank name" data-mock="true">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Income Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Monthly Income *</label>
+                                    <input type="number" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter monthly income" data-mock="true">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Yearly Income *</label>
+                                    <input type="number" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter yearly income" data-mock="true">
+                                </div>
+                            </div>
+
+                            <!-- PAN Number (conditional) -->
+                            <div id="business-pan-field" class="hidden">
+                                <label class="block text-sm font-medium text-foreground mb-2">Business PAN Number *</label>
+                                <input type="text" class="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent" placeholder="Enter business PAN number" data-mock="true">
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between pt-6">
+                                <button type="button" onclick="previousStep()" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                                    Previous
+                                </button>
+                                <button type="button" onclick="nextStep()" class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:validateShopInfo">
+                                    Next Step
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 4: Business Documents -->
+                <div id="step-4" class="kyc-step">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h2 class="text-2xl font-semibold mb-6 text-foreground">Step 4: Business Documents Upload</h2>
+                        
+                        <div class="space-y-6">
+                            <!-- Business Type Info -->
+                            <div class="bg-muted rounded-lg p-4">
+                                <p class="text-sm text-muted-foreground">Selected Business Type: <span class="font-medium text-foreground" id="selected-business-type">Proprietorship</span></p>
+                                <p class="text-xs text-muted-foreground mt-1">Upload the required documents based on your business type</p>
+                            </div>
+
+                            <!-- Document Upload Grid -->
+                            <div id="business-documents" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Documents will be populated based on business type -->
+                            </div>
+
+                            <!-- Upload Progress -->
+                            <div class="bg-muted rounded-lg p-4">
+                                <h4 class="font-medium text-foreground mb-2">Upload Progress</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-foreground">Required Documents (0/9)</span>
+                                        <span class="text-muted-foreground">0%</span>
+                                    </div>
+                                    <div class="w-full bg-background rounded-full h-2">
+                                        <div class="bg-primary h-2 rounded-full w-0"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between pt-6">
+                                <button type="button" onclick="previousStep()" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                                    Previous
+                                </button>
+                                <button type="button" onclick="nextStep()" class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:validateBusinessDocs">
+                                    Next Step
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Final Review -->
+                <div id="step-5" class="kyc-step">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h2 class="text-2xl font-semibold mb-6 text-foreground">Step 5: Final Application Review</h2>
+                        
+                        <div class="space-y-6">
+                            <!-- Summary Sections -->
+                            <div class="space-y-4">
+                                <!-- Personal Details Summary -->
+                                <div class="bg-muted rounded-lg p-4">
+                                    <h3 class="font-semibold text-foreground mb-3">Personal Details</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                        <div><span class="text-muted-foreground">Name:</span> <span class="text-foreground">John Doe</span></div>
+                                        <div><span class="text-muted-foreground">Mobile:</span> <span class="text-foreground">+91 9876543210</span></div>
+                                        <div><span class="text-muted-foreground">Email:</span> <span class="text-foreground">john.doe@example.com</span></div>
+                                        <div><span class="text-muted-foreground">Aadhaar:</span> <span class="text-foreground">XXXX XXXX 1234</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Shop Information Summary -->
+                                <div class="bg-muted rounded-lg p-4">
+                                    <h3 class="font-semibold text-foreground mb-3">Shop Information</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                        <div><span class="text-muted-foreground">Shop Name:</span> <span class="text-foreground">ABC Electronics</span></div>
+                                        <div><span class="text-muted-foreground">Business Type:</span> <span class="text-foreground">Proprietorship</span></div>
+                                        <div><span class="text-muted-foreground">Employees:</span> <span class="text-foreground">5</span></div>
+                                        <div><span class="text-muted-foreground">Shop Size:</span> <span class="text-foreground">500 sq.ft</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Documents Summary -->
+                                <div class="bg-muted rounded-lg p-4">
+                                    <h3 class="font-semibold text-foreground mb-3">Uploaded Documents</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                            <span class="text-foreground">Aadhaar Card</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                            <span class="text-foreground">PAN Card</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                            <span class="text-foreground">Cancelled Cheque</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                            <span class="text-foreground">Shop License</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Declarations -->
+                            <div class="bg-card border border-border rounded-lg p-4">
+                                <h3 class="font-semibold text-foreground mb-4">Declarations</h3>
+                                <div class="space-y-3">
+                                    <label class="flex items-start space-x-3">
+                                        <input type="checkbox" class="mt-1 h-4 w-4 text-primary focus:ring-primary border-border rounded" data-mock="true">
+                                        <span class="text-sm text-foreground">I declare that all the information provided is true and accurate to the best of my knowledge.</span>
+                                    </label>
+                                    <label class="flex items-start space-x-3">
+                                        <input type="checkbox" class="mt-1 h-4 w-4 text-primary focus:ring-primary border-border rounded" data-mock="true">
+                                        <span class="text-sm text-foreground">I agree to the terms and conditions of the KYC verification process.</span>
+                                    </label>
+                                    <label class="flex items-start space-x-3">
+                                        <input type="checkbox" class="mt-1 h-4 w-4 text-primary focus:ring-primary border-border rounded" data-mock="true">
+                                        <span class="text-sm text-foreground">I consent to the processing of my personal data for verification purposes.</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button type="button" class="flex-1 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors" data-event="click:viewApplication">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    View Application Form
+                                </button>
+                                <button type="button" class="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:submitToLOS">
+                                    <i class="fas fa-paper-plane mr-2"></i>
+                                    Submit to LOS
+                                </button>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between pt-6">
+                                <button type="button" onclick="previousStep()" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                                    Previous
+                                </button>
+                                <button type="button" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-event="click:completeApplication">
+                                    Complete Application
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports-section" class="section">
+            <div class="p-6">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-foreground mb-2">Reports</h1>
+                    <p class="text-muted-foreground">Application status tracking and analytics</p>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="bg-card rounded-xl shadow-md border border-border p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">Date Range</label>
+                            <select class="px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent">
+                                <option>Last 30 days</option>
+                                <option>Last 90 days</option>
+                                <option>Last 6 months</option>
+                                <option>Last year</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">Status</label>
+                            <select class="px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent">
+                                <option>All Status</option>
+                                <option>Submitted to LOS</option>
+                                <option>In Process</option>
+                                <option>Rejected</option>
+                                <option>Not Submitted</option>
+                            </select>
+                        </div>
+                        <button class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Submitted to LOS</p>
+                                <p class="text-3xl font-bold text-blue-600" data-mock="true">625</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-paper-plane text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">In Process</p>
+                                <p class="text-3xl font-bold text-yellow-600" data-mock="true">267</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-cog text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Rejected</p>
+                                <p class="text-3xl font-bold text-red-600" data-mock="true">189</p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-border">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Not Submitted</p>
+                                <p class="text-3xl font-bold text-gray-600" data-mock="true">166</p>
+                            </div>
+                            <div class="bg-gray-100 p-3 rounded-lg">
+                                <i class="fas fa-clock text-gray-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-foreground">Application Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="reportsStatusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                        <h3 class="text-xl font-semibold mb-4 text-foreground">Monthly Application Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="reportsTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="bg-card rounded-xl shadow-md border border-border p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-foreground">Recent Applications</h3>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                                <i class="fas fa-download mr-2"></i>
+                                Export
+                            </button>
+                            <button class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                New Application
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-border">
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Application ID</th>
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Applicant Name</th>
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Shop Name</th>
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Status</th>
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Submitted Date</th>
+                                    <th class="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- @MAP: applications.map(app => ( -->
+                                <tr class="border-b border-border" data-mock="true">
+                                    <td class="py-4 text-sm text-foreground">APP-001</td>
+                                    <td class="py-4 text-sm text-foreground">John Doe</td>
+                                    <td class="py-4 text-sm text-foreground">ABC Electronics</td>
+                                    <td class="py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Submitted to LOS
+                                        </span>
+                                    </td>
+                                    <td class="py-4 text-sm text-muted-foreground">2024-01-15</td>
+                                    <td class="py-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary hover:text-primary/80" data-event="click:viewApplication">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary hover:text-secondary/80" data-event="click:editApplication">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr class="border-b border-border" data-mock="true">
+                                    <td class="py-4 text-sm text-foreground">APP-002</td>
+                                    <td class="py-4 text-sm text-foreground">Jane Smith</td>
+                                    <td class="py-4 text-sm text-foreground">XYZ Traders</td>
+                                    <td class="py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            In Process
+                                        </span>
+                                    </td>
+                                    <td class="py-4 text-sm text-muted-foreground">2024-01-14</td>
+                                    <td class="py-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary hover:text-primary/80" data-event="click:viewApplication">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary hover:text-secondary/80" data-event="click:editApplication">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr class="border-b border-border" data-mock="true">
+                                    <td class="py-4 text-sm text-foreground">APP-003</td>
+                                    <td class="py-4 text-sm text-foreground">Robert Johnson</td>
+                                    <td class="py-4 text-sm text-foreground">Tech Solutions</td>
+                                    <td class="py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Rejected
+                                        </span>
+                                    </td>
+                                    <td class="py-4 text-sm text-muted-foreground">2024-01-13</td>
+                                    <td class="py-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary hover:text-primary/80" data-event="click:viewApplication">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary hover:text-secondary/80" data-event="click:editApplication">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-6">
+                        <p class="text-sm text-muted-foreground">Showing 1 to 10 of 97 results</p>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1 text-sm border border-border rounded hover:bg-muted transition-colors">Previous</button>
+                            <button class="px-3 py-1 text-sm bg-primary text-primary-foreground rounded">1</button>
+                            <button class="px-3 py-1 text-sm border border-border rounded hover:bg-muted transition-colors">2</button>
+                            <button class="px-3 py-1 text-sm border border-border rounded hover:bg-muted transition-colors">3</button>
+                            <button class="px-3 py-1 text-sm border border-border rounded hover:bg-muted transition-colors">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Theme Management
+            let isDarkMode = localStorage.getItem('darkMode') === 'true';
+            let currentStep = 1;
+            let currentSection = 'dashboard';
+
+            // Initialize theme
+            function initializeTheme() {
+                const html = document.documentElement;
+                const themeIcon = document.getElementById('theme-icon');
+                const themeText = document.getElementById('theme-text');
+                
+                if (isDarkMode) {
+                    html.classList.add('dark');
+                    themeIcon.className = 'fas fa-sun mr-3';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    html.classList.remove('dark');
+                    themeIcon.className = 'fas fa-moon mr-3';
+                    themeText.textContent = 'Dark Mode';
+                }
+            }
+
+            window.toggleTheme = function() {
+                isDarkMode = !isDarkMode;
+                localStorage.setItem('darkMode', isDarkMode.toString());
+                initializeTheme();
+            };
+
+            // Section Management
+            window.showSection = function(sectionName) {
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected section
+                document.getElementById(sectionName + '-section').classList.add('active');
+                
+                // Update navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Add active class to current nav item
+                const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                currentSection = sectionName;
+                
+                // Initialize charts if dashboard or reports section
+                if (sectionName === 'dashboard') {
+                    setTimeout(initializeDashboardCharts, 100);
+                } else if (sectionName === 'reports') {
+                    setTimeout(initializeReportsCharts, 100);
+                }
+            };
+
+            // Sidebar Management
+            window.toggleSidebar = function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('-translate-x-full');
+            };
+
+            // KYC Step Management
+            window.nextStep = function() {
+                if (currentStep < 5) {
+                    // Hide current step
+                    document.getElementById(`step-${currentStep}`).classList.remove('active');
+                    
+                    // Show next step
+                    currentStep++;
+                    document.getElementById(`step-${currentStep}`).classList.add('active');
+                    
+                    // Update step indicators
+                    updateStepIndicators();
+                }
+            };
+
+            window.previousStep = function() {
+                if (currentStep > 1) {
+                    // Hide current step
+                    document.getElementById(`step-${currentStep}`).classList.remove('active');
+                    
+                    // Show previous step
+                    currentStep--;
+                    document.getElementById(`step-${currentStep}`).classList.add('active');
+                    
+                    // Update step indicators
+                    updateStepIndicators();
+                }
+            };
+
+            function updateStepIndicators() {
+                const indicators = document.querySelectorAll('.step-indicator');
+                indicators.forEach((indicator, index) => {
+                    const stepNumber = index + 1;
+                    const circle = indicator.querySelector('div');
+                    
+                    if (stepNumber < currentStep) {
+                        indicator.classList.add('completed');
+                        circle.classList.remove('bg-muted', 'text-muted-foreground');
+                        circle.classList.add('bg-primary', 'text-primary-foreground');
+                    } else if (stepNumber === currentStep) {
+                        indicator.classList.remove('completed');
+                        circle.classList.remove('bg-muted', 'text-muted-foreground');
+                        circle.classList.add('bg-primary', 'text-primary-foreground');
+                    } else {
+                        indicator.classList.remove('completed');
+                        circle.classList.remove('bg-primary', 'text-primary-foreground');
+                        circle.classList.add('bg-muted', 'text-muted-foreground');
+                    }
+                });
+            }
+
+            // Business Documents Management
+            window.updateBusinessDocuments = function(businessType) {
+                const documentsContainer = document.getElementById('business-documents');
+                const businessTypeSpan = document.getElementById('selected-business-type');
+                const panField = document.getElementById('business-pan-field');
+                
+                businessTypeSpan.textContent = businessType.charAt(0).toUpperCase() + businessType.slice(1);
+                
+                // Show/hide PAN field based on business type
+                if (businessType !== 'proprietorship') {
+                    panField.classList.remove('hidden');
+                } else {
+                    panField.classList.add('hidden');
+                }
+                
+                let documents = [];
+                
+                switch(businessType) {
+                    case 'proprietorship':
+                        documents = ['PAN', 'Udyam', 'ITR', 'GST', 'Utility Bills', 'Property Tax', 'Shop License', 'Shop Ownership', 'Passport Photo'];
+                        break;
+                    case 'partnership':
+                        documents = ['Partnership Deed', 'Passport Photo', 'PAN (Firm)', 'GST', 'ITR', 'Utility Bills', 'Shop License', 'Shop Ownership'];
+                        break;
+                    case 'private-limited':
+                        documents = ['MOA', 'AOA', 'GST', 'Passport Photo', 'PAN', 'ITR', 'Utility Bills', 'Shop License', 'Shop Ownership', 'Incorporation Certificate'];
+                        break;
+                    case 'huf':
+                        documents = ['PAN-HUF', 'HUF Declaration', 'Karta ID Proof', 'Karta Address Proof', 'HUF Address Proof', 'Bank Proof', 'Karta Photo'];
+                        break;
+                }
+                
+                documentsContainer.innerHTML = documents.map(doc => `
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-foreground">${doc} *</label>
+                        <div class="file-upload-area p-4 rounded-lg text-center cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-2xl text-muted-foreground mb-2"></i>
+                            <p class="text-sm text-muted-foreground">Click to upload ${doc}</p>
+                            <input type="file" class="hidden" accept=".pdf,.jpg,.png">
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            // Chart Initialization
+            function initializeDashboardCharts() {
+                // Pie Chart
+                const statusCtx = document.getElementById('statusPieChart');
+                if (statusCtx) {
+                    new Chart(statusCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Approved', 'Rejected', 'In Process', 'Pending'],
+                            datasets: [{
+                                data: [892, 156, 143, 56],
+                                backgroundColor: [
+                                    'hsl(163, 91%, 27%)',
+                                    'hsl(0, 84%, 60%)',
+                                    'hsl(45, 93%, 47%)',
+                                    'hsl(210, 100%, 60%)'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Bar Chart
+                const monthlyCtx = document.getElementById('monthlyBarChart');
+                if (monthlyCtx) {
+                    new Chart(monthlyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Applications',
+                                data: [65, 78, 90, 81, 56, 89],
+                                backgroundColor: 'hsl(163, 91%, 27%)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function initializeReportsCharts() {
+                // Reports Status Chart
+                const reportsStatusCtx = document.getElementById('reportsStatusChart');
+                if (reportsStatusCtx) {
+                    new Chart(reportsStatusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Submitted to LOS', 'In Process', 'Rejected', 'Not Submitted'],
+                            datasets: [{
+                                data: [625, 267, 189, 166],
+                                backgroundColor: [
+                                    'hsl(210, 100%, 60%)',
+                                    'hsl(45, 93%, 47%)',
+                                    'hsl(0, 84%, 60%)',
+                                    'hsl(215, 16%, 47%)'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Reports Trend Chart
+                const reportsTrendCtx = document.getElementById('reportsTrendChart');
+                if (reportsTrendCtx) {
+                    new Chart(reportsTrendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Submitted',
+                                data: [120, 135, 145, 160, 155, 170],
+                                borderColor: 'hsl(210, 100%, 60%)',
+                                backgroundColor: 'hsla(210, 100%, 60%, 0.1)',
+                                fill: true
+                            }, {
+                                label: 'Approved',
+                                data: [85, 95, 110, 120, 115, 125],
+                                borderColor: 'hsl(163, 91%, 27%)',
+                                backgroundColor: 'hsla(163, 91%, 27%, 0.1)',
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeTheme();
+                updateStepIndicators();
+                
+                // Set default business documents
+                updateBusinessDocuments('proprietorship');
+                
+                // Initialize dashboard charts by default
+                setTimeout(initializeDashboardCharts, 100);
+                
+                // Add CSS for sections and steps
+                const style = document.createElement('style');
+                style.textContent = `
+                    .section {
+                        display: none;
+                    }
+                    .section.active {
+                        display: block;
+                    }
+                    .kyc-step {
+                        display: none;
+                    }
+                    .kyc-step.active {
+                        display: block;
+                    }
+                    .nav-link.active {
+                        background-color: var(--primary);
+                        color: var(--primary-foreground);
+                    }
+                    .nav-link:hover {
+                        background-color: var(--muted);
+                    }
+                `;
+                document.head.appendChild(style);
+            });
+        })();
+    </script>
+</body>
+</html>
