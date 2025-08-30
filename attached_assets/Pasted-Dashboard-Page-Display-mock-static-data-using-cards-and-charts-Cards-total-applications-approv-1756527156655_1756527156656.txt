@@ -1,0 +1,83 @@
+Dashboard Page:
+
+Display mock static data using cards and charts.
+
+Cards: total applications, approved, rejected, in-process, pending submissions.
+
+Charts: pie chart for application status distribution and bar chart for monthly trends.
+
+KYC Application Process (Step-Wise):
+
+Users cannot proceed to the next step until the current step is completed.
+
+Step 1: Personal Details
+
+Fields: first name, middle name, last name, mobile number with OTP, email with OTP, Aadhaar number with OTP.
+
+Validations: mobile number (10 digits only), Aadhaar (12 digits only).
+
+Address: street, city, pin code, state, block number.
+
+Live selfie capture only.
+
+Bank details: account number, account holder name, IFSC code, bank name.
+
+Average monthly income field.
+
+Step 2: Personal Documents Upload
+
+Dropdowns for uploading documents. Uploaded documents disable that dropdown option.
+
+Documents: Aadhaar, PAN, cancelled cheque, ITR, house documents/rent agreement, reference documents.
+
+Step 3: Shop Information
+
+Fields: shop name, number of employees, shop size (sq.ft), street, city, state, pincode, account number, IFSC code, account holder name, bank name.
+
+Shop monthly and yearly income.
+
+PAN number if business type is not proprietorship.
+
+Step 4: Business Documents Upload (Based on Business Type)
+
+Business types and documents:
+
+Proprietorship: PAN, Udyam, ITR, GST, utility bills, property tax, shop license, shop ownership, passport photo.
+
+Partnership: partnership deed, passport photo, PAN (firm), GST, ITR, utility bills, shop license, shop ownership.
+
+Private Limited: MOA, AOA, GST, passport photo, PAN, ITR, utility bills, shop license, shop ownership, incorporation certificate.
+
+HUF: PAN-HUF, HUF declaration, Karta ID proof, Karta address proof, HUF address proof, bank proof, Karta photo.
+
+Validate uploaded documents and disable the uploaded option.
+
+Step 5: Final Application Form
+
+Show a summary of all collected data.
+
+Include checkboxes for declarations, a submit to LOS button, and a view option for the application form.
+
+Reports Page:
+
+Table and charts showing applications by status: submitted to LOS, in process, rejected, not submitted.
+
+Additional Requirements:
+
+Step navigation with Next/Previous buttons.
+
+Form validations for all fields (mobile, Aadhaar, required fields).
+
+Mock static data in dashboard and reports.
+
+Responsive and modern UI.
+
+Use Tailwind CSS or Radix UI components.
+
+Live selfie uses device camera access only.
+
+Fully functional frontend (backend APIs can be mocked).
+
+All files must be TypeScript TSX and properly typed.
+
+Include the folder structure provided above when generating files.
